@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Health Monitoring System</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      margin: 30px auto;
+      padding: 20px;
+      width: 80%;
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    h2, h3, p {
+      margin: 10px;
+    }
+
+    button {
+      background: #ff4b5c;
+      border: none;
+      padding: 12px 25px;
+      font-size: 16px;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #ff1e38;
+      transform: scale(1.05);
+    }
+
+    canvas {
+      background: white;
+      border-radius: 10px;
+      margin-top: 20px;
+      padding: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🏥 Smart Health Monitoring System</h1>
+
+  <div class="container">
+    <h2>🌡 Temperature: <span id="temp">--</span> °C</h2>
+    <h2>❤️ Heart Rate: <span id="hr">--</span> BPM</h2>
+    <h2 id="alert" style="color: lightgreen;">Normal</h2>
+    <p id="time"></p>
+    <p id="location">📍 Location: Detecting...</p>
+
+    <button onclick="emergency()">🚨 Emergency</button>
+    <h3 id="msg"></h3>
+
+    <canvas id="myChart"></canvas>
+  </div>
+
+  <script>
+    let prevTemp = 36;
+    let prevHr = 70;
+
+    let labels = [];
+    let tempData = [];
+    let hrData = [];
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Temperature', data: tempData, borderWidth: 2 },
+          { label: 'Heart Rate', data: hrData, borderWidth: 2 }
+        ]
+      }
+    });
+
+    function updateData() {
+      let temp = (36 + Math.random() * 3).toFixed(1);
+      let hr = Math.floor(60 + Math.random() * 60);
+
+      document.getElementById("temp").innerText = temp;
+      document.getElementById("hr").innerText = hr;
+
+      let alertBox = document.getElementById("alert");
+
+      if (temp > 38 || hr > 110) {
+        alertBox.innerText = "🔴 CRITICAL CONDITION!";
+        alertBox.style.color = "red";
+      } 
+      else if (temp > prevTemp + 0.5 || hr > prevHr + 10) {
+        alertBox.innerText = "🟡 WARNING: Rising Trend";
+        alertBox.style.color = "orange";
+      } 
+      else {
+        alertBox.innerText = "🟢 Normal";
+        alertBox.style.color = "lightgreen";
+      }
+
+      prevTemp = temp;
+      prevHr = hr;
+
+      let time = new Date().toLocaleTimeString();
+      document.getElementById("time").innerText = "Last Updated: " + time;
+
+      labels.push(time);
+      tempData.push(temp);
+      hrData.push(hr);
+
+      if (labels.length > 10) {
+        labels.shift();
+        tempData.shift();
+        hrData.shift();
+      }
+
+      chart.update();
+    }
+
+    function emergency() {
+      document.getElementById("msg").innerText =
+        "🚨 Emergency Alert Sent with Location!";
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        document.getElementById("location").innerText =
+          "📍 Location: " + pos.coords.latitude.toFixed(3) + ", " +
+          pos.coords.longitude.toFixed(3);
+      },
+      () => {
+        document.getElementById("location").innerText =
+          "📍 Location access denied";
+      }
+    );
+
+    setInterval(updateData, 2000);
+  </script>
+
+</body>
+</html>
