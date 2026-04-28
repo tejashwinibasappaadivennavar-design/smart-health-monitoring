@@ -1,114 +1,165 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Smart Health Monitoring</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Smart Health Monitoring System</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      margin: 30px auto;
+      padding: 20px;
+      width: 80%;
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    button {
+      background: #ff4b5c;
+      border: none;
+      padding: 12px 25px;
+      font-size: 16px;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ff1e38;
+      transform: scale(1.05);
+    }
+
+    canvas {
+      background: white;
+      border-radius: 10px;
+      margin-top: 20px;
+      padding: 10px;
+    }
+  </style>
 </head>
 
-<body style="text-align:center; font-family:Arial;">
+<body>
 
-<h1>Predictive Health Monitoring & Emergency Alert System</h1>
+  <h1>🏥 Smart Health Monitoring System</h1>
 
-<h2>Temperature: <span id="temp">--</span> °C</h2>
-<h2>Heart Rate: <span id="hr">--</span> BPM</h2>
+  <div class="container">
+    <h2>🌡 Temp: <span id="temp">--</span> °C</h2>
+    <h2>❤️ HR: <span id="hr">--</span> BPM</h2>
+    <h2 id="alert">🟢 Normal</h2>
 
-<h2 id="status">Normal</h2>
-<h3 id="risk">Risk Level: 0%</h3>
+    <p>Normal Range → Temp: 36–37.5°C | HR: 60–100 BPM</p>
 
-<h3>📍 Location: <span id="location">Fetching...</span></h3>
+    <p id="time"></p>
+    <p id="location">📍 Detecting...</p>
 
-<div id="alertBox" style="display:none; background:red; color:white; padding:15px;">
-🚨 EMERGENCY ALERT SENT! <br>
-📩 SMS sent to caregiver <br>
-</div>
+    <button onclick="emergency()">🚨 Emergency</button>
+    <h3 id="msg"></h3>
 
-<br>
-<canvas id="myChart" width="400" height="200"></canvas>
+    <canvas id="myChart"></canvas>
+  </div>
 
-<script>
+  <script>
+    let prevTemp = 36;
+    let prevHr = 70;
 
-// LOCATION (GPS)
-if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-        let lat = position.coords.latitude.toFixed(4);
-        let lon = position.coords.longitude.toFixed(4);
-        document.getElementById("location").innerText = lat + ", " + lon;
+    let labels = [];
+    let tempData = [];
+    let hrData = [];
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Temperature (°C)',
+            data: tempData,
+            borderColor: 'orange',
+            tension: 0.4
+          },
+          {
+            label: 'Heart Rate (BPM)',
+            data: hrData,
+            borderColor: 'red',
+            tension: 0.4
+          }
+        ]
+      }
     });
-} else {
-    document.getElementById("location").innerText = "Not available";
-}
 
-// STATUS
-function updateStatus(hr, temp) {
-    let status = document.getElementById("status");
+    function updateData() {
+      let temp = parseFloat((36 + Math.random() * 3).toFixed(1));
+      let hr = Math.floor(60 + Math.random() * 60);
 
-    if (hr > 110 || temp > 38) {
-        status.innerText = "Emergency";
-        status.style.color = "red";
-        showAlert();
-    } else if (hr > 95) {
-        status.innerText = "Warning";
-        status.style.color = "orange";
-    } else {
-        status.innerText = "Normal";
-        status.style.color = "green";
-    }
-}
+      document.getElementById("temp").innerText = temp;
+      document.getElementById("hr").innerText = hr;
 
-// RISK %
-function updateRisk(hr) {
-    let risk = Math.min(100, Math.floor((hr / 120) * 100));
-    document.getElementById("risk").innerText = "Risk Level: " + risk + "%";
-}
+      let alertBox = document.getElementById("alert");
 
-// ALERT BOX
-function showAlert() {
-    document.getElementById("alertBox").style.display = "block";
-}
+      if (temp > 38 || hr > 110) {
+        alertBox.innerText = "🔴 CRITICAL CONDITION!";
+        alertBox.style.color = "red";
+      } 
+      else if (temp > 37.5 || hr > 100) {
+        alertBox.innerText = "🟡 WARNING";
+        alertBox.style.color = "orange";
+      } 
+      else {
+        alertBox.innerText = "🟢 Normal";
+        alertBox.style.color = "lightgreen";
+      }
 
-// CHART
-let ctx = document.getElementById('myChart').getContext('2d');
+      prevTemp = temp;
+      prevHr = hr;
 
-let chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: [{
-            label: 'Heart Rate',
-            data: [],
-            borderWidth: 2
-        }]
-    }
-});
+      let time = new Date().toLocaleTimeString();
+      document.getElementById("time").innerText = "Updated: " + time;
 
-function updateChart(val) {
-    chart.data.labels.push(new Date().toLocaleTimeString());
-    chart.data.datasets[0].data.push(val);
+      labels.push(time);
+      tempData.push(temp);
+      hrData.push(hr);
 
-    if (chart.data.labels.length > 10) {
-        chart.data.labels.shift();
-        chart.data.datasets[0].data.shift();
+      if (labels.length > 10) {
+        labels.shift();
+        tempData.shift();
+        hrData.shift();
+      }
+
+      chart.update();
     }
 
-    chart.update();
-}
+    function emergency() {
+      document.getElementById("msg").innerText =
+        "🚨 Alert sent! Sharing live location...";
+    }
 
-// SIMULATION
-setInterval(() => {
+    // Live location tracking
+    navigator.geolocation.watchPosition(
+      (pos) => {
+        document.getElementById("location").innerText =
+          "📍 " + pos.coords.latitude.toFixed(3) + ", " +
+          pos.coords.longitude.toFixed(3);
+      },
+      () => {
+        document.getElementById("location").innerText =
+          "📍 Location denied";
+      }
+    );
 
-    let hr = Math.floor(Math.random() * 40) + 70;
-    let temp = (Math.random() * 2 + 36).toFixed(1);
-
-    document.getElementById("hr").innerText = hr;
-    document.getElementById("temp").innerText = temp;
-
-    updateStatus(hr, temp);
-    updateRisk(hr);
-    updateChart(hr);
-
-}, 2000);
-
-</script>
+    setInterval(updateData, 2000);
+  </script>
 
 </body>
 </html>
