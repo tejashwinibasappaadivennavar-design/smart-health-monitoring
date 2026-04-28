@@ -3,6 +3,11 @@ Smart Health Monitoring System
 Overview
 This project is a simple Smart Health Monitoring System that simulates real-time temperature and heart rate data. It includes an alert system, live location tracking, and graphical visualization.
 
+prototype screenshot
+
+<img width="1881" height="903" alt="image" src="https://github.com/user-attachments/assets/5e7c890b-c2d1-47f4-8bd3-172b7c8185a7" />
+
+
 Features
 - Real-time temperature monitoring
 - Heart rate tracking
