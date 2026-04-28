@@ -30,4 +30,11 @@ Author
 thunder
 
 License
-This project is intended for educational purposes.
+This project is intended for educational purposes
+
+progress md
+
+-code is completed
+-output is successfully generated
+-working prototype is ready
+-final ppt in progress
